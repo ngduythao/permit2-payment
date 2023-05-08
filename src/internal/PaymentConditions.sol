@@ -21,11 +21,11 @@ contract PaymentConditions is IPaymentConditions {
         for (uint256 i = 0; i < length;) {
             PaymentConditionsLibrary.ContractCheck calldata condition = conditions[i];
             (bool success, bytes memory data) = condition.toCall.staticcall(condition.data);
-            
+
             if (!success) revert ConditionCallFailed(i);
-            
+
             if (!condition.checkCondition(data)) revert ConditionFailed(i);
-            
+
             unchecked {
                 ++i;
             }

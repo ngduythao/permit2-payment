@@ -69,7 +69,16 @@ library PaymentConditionsLibrary {
      * @param checkData The data to be checked against.
      * @return true if the condition is satisfied, false otherwise.
      */
-    function _check(CheckType checkType, uint256 value, bool boolValue, bytes memory checkData) internal pure returns (bool) {
+    function _check(
+        CheckType checkType,
+        uint256 value,
+        bool boolValue,
+        bytes memory checkData
+    )
+        internal
+        pure
+        returns (bool)
+    {
         if (checkType == CheckType.EQUAL) {
             return value == abi.decode(checkData, (uint256));
         } else if (checkType == CheckType.NOT_EQUAL) {
