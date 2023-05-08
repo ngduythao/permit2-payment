@@ -69,7 +69,7 @@ library PaymentTypes {
         return keccak256(abi.encode(TOKEN_PERMISSIONS_TYPE, permissions.token, permissions.amount));
     }
 
-    function hashes(PaymentStructs.PaymentExecution memory execution) internal pure returns (bytes32) {
+    function hashes(PaymentStructs.Execution memory execution) internal pure returns (bytes32) {
         return keccak256(
             abi.encode(
                 EXECUTION_TYPE_HASH, hashes(execution.operations), hashes(execution.conditions), hash(execution.payment)
@@ -77,7 +77,7 @@ library PaymentTypes {
         );
     }
 
-    function toPermit(PaymentStructs.PaymentExecution memory execution)
+    function toPermit(PaymentStructs.Execution memory execution)
         internal
         pure
         returns (ISignatureTransfer.PermitBatchTransferFrom memory permit)
@@ -89,7 +89,7 @@ library PaymentTypes {
         });
     }
 
-    function transferDetails(PaymentStructs.PaymentExecution memory execution)
+    function transferDetails(PaymentStructs.Execution memory execution)
         internal
         view
         returns (ISignatureTransfer.SignatureTransferDetails[] memory details)

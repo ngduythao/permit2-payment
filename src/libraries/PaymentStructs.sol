@@ -27,7 +27,7 @@ library PaymentStructs {
         bytes data; // The data to be passed to the contract
     }
 
-    struct PaymentExecution {
+    struct Execution {
         ISignatureTransfer.TokenPermissions[] tokens; // The tokens to be transferred in the execution
         ISignatureTransfer.TokenPermissions payment; // The payment token and permissions
         Operation[] operations; // The operations to be performed in the execution
