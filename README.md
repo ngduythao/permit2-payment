@@ -3,7 +3,9 @@
 User specifies and signs the set of operations they want to do and an amount of ERC20 tokens they're willing to pay for
 execution
 
-Contract and verifies signature using permit2 and pulls user tokens, performs the payments.
+Contract and verifies signature using
+[Uniswap Permit2](https://github.com/dragonfly-xyz/useful-solidity-patterns/tree/main/patterns/permit2) and pulls user
+tokens, performs the payments.
 
 ## Getting Started
 

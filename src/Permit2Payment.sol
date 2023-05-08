@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import { ERC20 } from "solmate/src/tokens/ERC20.sol";
+import { SafeTransferLib } from "solmate/src/utils/SafeTransferLib.sol";
 import { ISignatureTransfer } from "permit2/src/interfaces/ISignatureTransfer.sol";
 import { IPermit2Payment, PaymentStructs } from "./interfaces/IPermit2Payment.sol";
 import { IConditionCheck } from "./internal/interfaces/IConditionCheck.sol";
@@ -20,6 +21,7 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
     function execute(PaymentStructs.Execution calldata execution) external {
         _receiveTokens(execution);
         _executeOperations(execution.operations, execution.conditions);
+        _payExecution(execution.sender, execution.payment);
     }
 
     /// @notice receive tokens from the user
@@ -60,5 +62,14 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
                 ++i;
             }
         }
+    }
+
+    /// @notice pay the relayer for execution
+    function _payExecution(address owner, ISignatureTransfer.TokenPermissions calldata payment) internal {
+        // users may execute their own transaction
+        if (payment.amount == 0) return;
+
+        // or allow relayers to claim fee as payment
+        SafeTransferLib.safeTransferFrom(ERC20(payment.token), owner, msg.sender, payment.amount);
     }
 }
