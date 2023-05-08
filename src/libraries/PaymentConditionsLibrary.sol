@@ -16,23 +16,23 @@ library PaymentConditionsLibrary {
         FALSE
     }
 
-    struct ContractCheck {
+    struct Condition {
         CheckType checkType; // The type of check to perform
         address toCall; // The address of the contract to be called
         bytes data; // The data to be passed to the contract
         bytes check; // The check to be performed on the result of the contract call
     }
 
-    struct ContractOperation {
+    struct Operation {
         address to; // The address of the contract to be called
         bytes data; // The data to be passed to the contract
     }
 
-    struct SponsoredExecution {
+    struct PaymentExecution {
         ISignatureTransfer.TokenPermissions[] tokens; // The tokens to be transferred in the execution
         ISignatureTransfer.TokenPermissions payment; // The payment token and permissions
-        ContractOperation[] contractOperations; // The operations to be performed in the execution
-        ContractCheck[] contractChecks; // The conditions that must be met before the execution can proceed
+        Operation[] operations; // The operations to be performed in the execution
+        Condition[] conditions; // The conditions that must be met after the execution
         address sender; // The user who initiated the execution
         uint256 nonce; // A unique identifier for the execution
         uint256 deadline; // The deadline for the execution to be completed
@@ -45,7 +45,7 @@ library PaymentConditionsLibrary {
      * @param data The result data returned from the contract call.
      * @return true if the condition is satisfied, false otherwise.
      */
-    function checkCondition(ContractCheck calldata condition, bytes memory data) internal pure returns (bool) {
+    function checkCondition(Condition calldata condition, bytes memory data) internal pure returns (bool) {
         uint256 value;
         bool boolValue;
 
