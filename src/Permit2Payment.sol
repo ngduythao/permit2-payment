@@ -50,14 +50,20 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
         uint256 conditionsLength = conditions.length;
         bool success;
         bytes memory data;
+        PaymentStructs.Operation calldata operation;
+        PaymentStructs.Condition calldata condition;
 
         for (uint256 i = 0; i < opLength;) {
-            PaymentStructs.Operation calldata operation = operations[i];
+            operation = operations[i];
             (success, data) = operation.to.call(operation.data);
 
             if (!success) revert ExecuteOperationFailed(i);
 
-            if (i < conditionsLength && !conditions[i].checkCondition(data)) revert ConditionFailed(i);
+            if (i < conditionsLength) {
+                condition = conditions[i];
+                (success, data) = condition.toCall.staticcall(condition.data);
+                if (!success || !condition.checkCondition(data)) revert ConditionCallFailed(i);
+            }
 
             unchecked {
                 ++i;
