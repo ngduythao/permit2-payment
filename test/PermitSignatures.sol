@@ -10,6 +10,11 @@ import { PermitHash } from "permit2/src/libraries/PermitHash.sol";
 import { PaymentStructs } from "src/libraries/PaymentStructs.sol";
 import { PaymentTypes } from "src/libraries/PaymentTypes.sol";
 
+/**
+ * @title PermitSignatures
+ * @dev A contract that provides functions for signing and verifying signatures for executing batch transfers with
+ * permit using EIP-712.
+ */
 contract PermitSignatures is Test {
     bytes32 public constant FULL_EXECUTION_TYPEHASH = keccak256(
         abi.encodePacked(
@@ -19,6 +24,13 @@ contract PermitSignatures is Test {
 
     ISignatureTransfer public immutable permit2 = ISignatureTransfer(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
+    /**
+     * @dev Generates the signature for executing a batch transfer with permit.
+     * @param execution The `Execution` struct that contains the transfer details.
+     * @param privateKey The private key of the signer.
+     * @param spender The address of the spender.
+     * @return result The `Execution` struct with the generated signature.
+     */
     function _signPaymentsExecution(
         PaymentStructs.Execution memory execution,
         uint256 privateKey,
@@ -28,12 +40,14 @@ contract PermitSignatures is Test {
         view
         returns (PaymentStructs.Execution memory result)
     {
+        // Generate the permit for batch transfer from.
         ISignatureTransfer.PermitBatchTransferFrom memory permit = ISignatureTransfer.PermitBatchTransferFrom({
             permitted: execution.tokens,
             nonce: execution.nonce,
             deadline: execution.deadline
         });
 
+        // Set the result with the given execution details and an empty signature.
         result = PaymentStructs.Execution({
             tokens: execution.tokens,
             payment: execution.payment,
@@ -45,6 +59,7 @@ contract PermitSignatures is Test {
             signature: new bytes(0)
         });
 
+        // Generate the signature for the given execution details and the permit.
         bytes memory sig = _getPermitBatchWitnessSignature(
             permit,
             spender,
@@ -53,9 +68,21 @@ contract PermitSignatures is Test {
             PaymentTypes.hashes(result),
             EIP712(address(permit2)).DOMAIN_SEPARATOR()
         );
+
+        // Set the result signature with the generated signature.
         result.signature = sig;
     }
 
+    /**
+     * @dev Generates the signature for a permit batch transfer from.
+     * @param permit The `PermitBatchTransferFrom` struct that contains the permit details.
+     * @param spender The address of the spender.
+     * @param privateKey The private key of the signer.
+     * @param typeHash The type hash of the permit.
+     * @param witness The hash of the witness data.
+     * @param domainSeparator The domain separator for EIP-712.
+     * @return sig The generated signature.
+     */
     function _getPermitBatchWitnessSignature(
         ISignatureTransfer.PermitBatchTransferFrom memory permit,
         address spender,
@@ -95,7 +122,7 @@ contract PermitSignatures is Test {
         return bytes.concat(r, s, bytes1(v));
     }
 
-    function _ERC20PermitMultiple(
+    function _getERC20PermitMultiple(
         address[] memory tokens,
         uint256 nonce
     )
