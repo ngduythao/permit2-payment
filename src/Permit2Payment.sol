@@ -21,7 +21,7 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
     function execute(PaymentStructs.Execution calldata execution) external {
         _receiveTokens(execution);
         _executeOperations(execution.operations, execution.conditions);
-        _payExecution(execution.sender, execution.payment);
+        _payExecution(execution.payment);
     }
 
     /// @notice receive tokens from the user
@@ -46,17 +46,18 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
     )
         internal
     {
-        uint256 length = operations.length;
+        uint256 opLength = operations.length;
+        uint256 conditionsLength = conditions.length;
         bool success;
         bytes memory data;
 
-        for (uint256 i = 0; i < length;) {
+        for (uint256 i = 0; i < opLength;) {
             PaymentStructs.Operation calldata operation = operations[i];
             (success, data) = operation.to.call(operation.data);
 
             if (!success) revert ExecuteOperationFailed(i);
 
-            if (!conditions[i].checkCondition(data)) revert ConditionFailed(i);
+            if (i < conditionsLength && !conditions[i].checkCondition(data)) revert ConditionFailed(i);
 
             unchecked {
                 ++i;
@@ -65,11 +66,11 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
     }
 
     /// @notice pay the relayer for execution
-    function _payExecution(address owner, ISignatureTransfer.TokenPermissions calldata payment) internal {
+    function _payExecution(ISignatureTransfer.TokenPermissions calldata payment) internal {
         // users may execute their own transaction
         if (payment.amount == 0) return;
 
         // or allow relayers to claim fee as payment
-        SafeTransferLib.safeTransferFrom(ERC20(payment.token), owner, msg.sender, payment.amount);
+        SafeTransferLib.safeTransfer(ERC20(payment.token), msg.sender, payment.amount);
     }
 }
