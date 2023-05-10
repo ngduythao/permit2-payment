@@ -5,9 +5,9 @@ import { ERC20 } from "solmate/src/tokens/ERC20.sol";
 import { SafeTransferLib } from "solmate/src/utils/SafeTransferLib.sol";
 import { ISignatureTransfer } from "permit2/src/interfaces/ISignatureTransfer.sol";
 import { IPermit2Payment, PaymentStructs } from "./interfaces/IPermit2Payment.sol";
-import { IConditionCheck } from "./internal/interfaces/IConditionCheck.sol";
-import { PaymentTypes } from "./libraries/PaymentTypes.sol";
-import { PaymentConditions } from "./libraries/PaymentConditions.sol";
+import { IConditionCheck } from "src/internal/interfaces/IConditionCheck.sol";
+import { PaymentTypes } from "src/libraries/PaymentTypes.sol";
+import { PaymentConditions } from "src/libraries/PaymentConditions.sol";
 
 /// @notice a contract that executes signed user token-oriented operations on their behalf
 contract Permit2Payment is IPermit2Payment, IConditionCheck {
