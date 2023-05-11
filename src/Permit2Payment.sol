@@ -4,13 +4,13 @@ pragma solidity 0.8.19;
 import { ERC20 } from "solmate/src/tokens/ERC20.sol";
 import { SafeTransferLib } from "solmate/src/utils/SafeTransferLib.sol";
 import { ISignatureTransfer } from "permit2/src/interfaces/ISignatureTransfer.sol";
-import { IPermit2Payment, PaymentStructs } from "./interfaces/IPermit2Payment.sol";
-import { IConditionCheck } from "src/internal/interfaces/IConditionCheck.sol";
+import { IPermit2Payment, PaymentStructs } from "src/interfaces/IPermit2Payment.sol";
+import { ConditionCheck } from "src/internal/ConditionCheck.sol";
 import { PaymentTypes } from "src/libraries/PaymentTypes.sol";
 import { PaymentConditions } from "src/libraries/PaymentConditions.sol";
 
 /// @notice a contract that executes signed user token-oriented operations on their behalf
-contract Permit2Payment is IPermit2Payment, IConditionCheck {
+contract Permit2Payment is IPermit2Payment, ConditionCheck {
     using PaymentTypes for PaymentStructs.Execution;
     using PaymentConditions for PaymentStructs.Condition;
 
@@ -20,8 +20,9 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
     /// @param execution the execution to execute
     function execute(PaymentStructs.Execution calldata execution) external {
         _receiveTokens(execution);
-        _executeOperations(execution.operations, execution.conditions);
+        _executeOperations(execution.operations);
         _payExecution(execution.payment);
+        _checkConditions(execution.conditions);
     }
 
     /// @notice receive tokens from the user
@@ -40,30 +41,17 @@ contract Permit2Payment is IPermit2Payment, IConditionCheck {
 
     /// @notice execute the given operations
     /// @param operations the operations to execute
-    function _executeOperations(
-        PaymentStructs.Operation[] calldata operations,
-        PaymentStructs.Condition[] calldata conditions
-    )
-        internal
-    {
+    function _executeOperations(PaymentStructs.Operation[] calldata operations) internal {
         uint256 opLength = operations.length;
-        uint256 conditionsLength = conditions.length;
         bool success;
         bytes memory data;
         PaymentStructs.Operation calldata operation;
-        PaymentStructs.Condition calldata condition;
 
         for (uint256 i = 0; i < opLength;) {
             operation = operations[i];
             (success, data) = operation.to.call(operation.data);
 
             if (!success) revert ExecuteOperationFailed(i);
-
-            if (i < conditionsLength) {
-                condition = conditions[i];
-                (success, data) = condition.toCall.staticcall(condition.data);
-                if (!success || !condition.checkCondition(data)) revert ConditionCallFailed(i);
-            }
 
             unchecked {
                 ++i;

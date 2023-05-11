@@ -13,13 +13,13 @@ import { MockERC20 } from "test/util/MockERC20.sol";
 import { PermitSignatures } from "test/util/PermitSignatures.sol";
 
 contract Permit2PaymentTest is Test, DeployPermit2, PermitSignatures, IConditionCheck {
-    address constant recipient = address(1);
-    uint256 constant senderPk = 0x1234;
-    address sender;
-    address relayer;
-    MockERC20 tokenA;
-    MockERC20 tokenB;
-    Permit2Payment permit2Payment;
+    address private recipient = address(1);
+    uint256 private senderPk = 0x1234;
+    address private sender;
+    address private relayer;
+    MockERC20 private tokenA;
+    MockERC20 private tokenB;
+    Permit2Payment private permit2Payment;
 
     function setUp() public {
         sender = vm.addr(senderPk);
